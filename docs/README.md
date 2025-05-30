@@ -2,6 +2,32 @@
 
 Bu proje, laptop özelliklerine göre fiyat tahmini yapan bir makine öğrenmesi modeli ve web arayüzü içermektedir.
 
+## Proje Yapısı
+
+```
+.
+├── data/                   # Veri dosyaları
+│   └── doldurulmus_veri.csv
+├── docs/                   # Dokümantasyon
+│   ├── README.md
+│   └── model_comparison_results.csv
+├── models/                 # Eğitilmiş modeller ve ilgili dosyalar
+│   ├── xgboost_model.joblib
+│   ├── label_encoders.joblib
+│   ├── categorical_columns.json
+│   └── feature_names.json
+├── src/                    # Kaynak kodlar
+│   ├── app.py
+│   └── model_testing.py
+├── static/                 # Statik dosyalar (görseller)
+│   ├── model_comparison.png
+│   ├── best_model_predictions.png
+│   ├── error_distribution.png
+│   └── *_feature_importance.png
+└── templates/             # Web şablonları
+    └── index.html
+```
+
 ## Proje İçeriği
 
 - [Proje Hakkında](#proje-hakkında)
@@ -45,7 +71,7 @@ Projede farklı makine öğrenmesi modelleri test edilmiş ve en iyi performans 
 
 ### Model Karşılaştırması
 
-![Model Karşılaştırması](model_comparison.png)
+![Model Karşılaştırması](../static/model_comparison.png)
 
 Model performans karşılaştırması sonuçları:
 
@@ -61,11 +87,11 @@ Model performans karşılaştırması sonuçları:
 
 XGBoost modeli, en yüksek R2 skoru (0.95) ve en düşük RMSE değeri (12,485.58) ile en iyi performansı göstermiştir.
 
-![XGBoost Tahminleri](best_model_predictions.png)
+![XGBoost Tahminleri](../static/best_model_predictions.png)
 
 ### Özellik Önemliliği
 
-![XGBoost Özellik Önemliliği](xgboost_feature_importance.png)
+![XGBoost Özellik Önemliliği](../static/xgboost_feature_importance.png)
 
 ## Web Arayüzü
 
@@ -88,6 +114,7 @@ pip install -r requirements.txt
 
 2. Flask uygulamasını başlatın:
 ```bash
+cd src
 python app.py
 ```
 
@@ -105,11 +132,11 @@ python app.py
 
 ### Tahmin vs Gerçek Değer Grafiği
 
-![Tahmin vs Gerçek](best_model_predictions.png)
+![Tahmin vs Gerçek](../static/best_model_predictions.png)
 
 ### Hata Dağılımı
 
-![Hata Dağılımı](error_distribution.png)
+![Hata Dağılımı](../static/error_distribution.png)
 
 ## Sonuçlar ve Değerlendirme
 

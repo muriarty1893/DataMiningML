@@ -3,14 +3,20 @@ import joblib
 import json
 import pandas as pd
 import numpy as np
+import os
 
 app = Flask(__name__)
 
 # Model ve gerekli dosyaları yükle
-model = joblib.load('xgboost_model.joblib')
-label_encoders = joblib.load('label_encoders.joblib')
+model_path = os.path.join('..', 'models', 'xgboost_model.joblib')
+label_encoders_path = os.path.join('..', 'models', 'label_encoders.joblib')
+feature_names_path = os.path.join('..', 'models', 'feature_names.json')
+categorical_columns_path = os.path.join('..', 'models', 'categorical_columns.json')
 
-with open('feature_names.json', 'r') as f:
+model = joblib.load(model_path)
+label_encoders = joblib.load(label_encoders_path)
+
+with open(feature_names_path, 'r') as f:
     all_features = json.load(f)
     # Gereksiz ve tekrar eden alanları kaldır
     features_to_remove = [
@@ -56,7 +62,7 @@ numeric_features = [
     'İşlemci_Çekirdek_Sayısı'
 ]
 
-with open('categorical_columns.json', 'r') as f:
+with open(categorical_columns_path, 'r') as f:
     categorical_columns = json.load(f)
     # Gereksiz ve tekrar eden alanları kaldır
     categorical_columns = [c for c in categorical_columns if c not in features_to_remove]

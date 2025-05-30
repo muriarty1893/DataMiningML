@@ -17,7 +17,8 @@ import os
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 # Veri setini yükle
-df = pd.read_csv('doldurulmus_veri.csv')
+data_path = os.path.join('..', 'data', 'doldurulmus_veri.csv')
+df = pd.read_csv(data_path)
 
 # Kategorik değişkenleri encode et
 categorical_columns = df.select_dtypes(include=['object']).columns
@@ -92,7 +93,7 @@ for name, model in models.items():
         sns.barplot(x='importance', y='feature', data=feature_importance.head(10))
         plt.title(f'{name} - Feature Importance')
         plt.tight_layout()
-        plt.savefig(f'{name.lower().replace(" ", "_")}_feature_importance.png')
+        plt.savefig(os.path.join('..', 'static', f'{name.lower().replace(" ", "_")}_feature_importance.png'))
         plt.close()
 
 # En iyi modeli bul
@@ -118,7 +119,7 @@ plt.title('Model Comparison')
 plt.xticks(x, model_names, rotation=45)
 plt.legend()
 plt.tight_layout()
-plt.savefig('model_comparison.png')
+plt.savefig(os.path.join('..', 'static', 'model_comparison.png'))
 plt.close()
 
 # Tahmin vs Gerçek değer grafiği (en iyi model için)
@@ -133,7 +134,7 @@ plt.xlabel('Gerçek Değerler')
 plt.ylabel('Tahminler')
 plt.title(f'{best_model_name} - Tahmin vs Gerçek')
 plt.tight_layout()
-plt.savefig('best_model_predictions.png')
+plt.savefig(os.path.join('..', 'static', 'best_model_predictions.png'))
 plt.close()
 
 # Hata dağılımı analizi
@@ -144,7 +145,7 @@ plt.xlabel('Tahmin Hatası')
 plt.ylabel('Frekans')
 plt.title(f'{best_model_name} - Hata Dağılımı')
 plt.tight_layout()
-plt.savefig('error_distribution.png')
+plt.savefig(os.path.join('..', 'static', 'error_distribution.png'))
 plt.close()
 
 # Sonuçları CSV'ye kaydet
@@ -155,11 +156,11 @@ results_df = pd.DataFrame({
     'CV_R2_Std': cv_stds,
     'RMSE': [results[model]['RMSE'] for model in model_names]
 })
-results_df.to_csv('model_comparison_results.csv', index=False)
+results_df.to_csv(os.path.join('..', 'docs', 'model_comparison_results.csv'), index=False)
 
-logging.info("\nDetaylı analiz sonuçları 'model_comparison_results.csv' dosyasına kaydedildi.")
+logging.info("\nDetaylı analiz sonuçları 'docs/model_comparison_results.csv' dosyasına kaydedildi.")
 logging.info("Görselleştirmeler kaydedildi:")
-logging.info("- model_comparison.png")
-logging.info("- best_model_predictions.png")
-logging.info("- error_distribution.png")
-logging.info("- *_feature_importance.png") 
+logging.info("- static/model_comparison.png")
+logging.info("- static/best_model_predictions.png")
+logging.info("- static/error_distribution.png")
+logging.info("- static/*_feature_importance.png") 
