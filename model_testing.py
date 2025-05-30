@@ -9,6 +9,18 @@ from sklearn.metrics import mean_squared_error, r2_score
 import xgboost as xgb
 import matplotlib.pyplot as plt
 import seaborn as sns
+import logging
+import sys
+from datetime import datetime
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler(f'model_results_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 df = pd.read_csv('doldurulmus_veri.csv')
 
@@ -52,14 +64,14 @@ for name, model in models.items():
         'R2': r2
     }
     
-    print(f"\n{name} Sonuçları:")
-    print(f"MSE: {mse:.2f}")
-    print(f"RMSE: {np.sqrt(mse):.2f}")
-    print(f"R2 Score: {r2:.2f}")
+    logging.info(f"\n{name} Sonuçları:")
+    logging.info(f"MSE: {mse:.2f}")
+    logging.info(f"RMSE: {np.sqrt(mse):.2f}")
+    logging.info(f"R2 Score: {r2:.2f}")
 
 best_model = max(results.items(), key=lambda x: x[1]['R2'])
-print(f"\nEn iyi model: {best_model[0]}")
-print(f"R2 Score: {best_model[1]['R2']:.2f}")
+logging.info(f"\nEn iyi model: {best_model[0]}")
+logging.info(f"R2 Score: {best_model[1]['R2']:.2f}")
 
 rf_model = models['Random Forest']
 feature_importance = pd.DataFrame({
