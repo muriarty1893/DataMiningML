@@ -72,10 +72,57 @@ with open(categorical_columns_path, 'r') as f:
 
 @app.route('/')
 def home():
+    # Extract unique values for dropdown menus for features not in label_encoders
+    additional_categorical_features = [
+        'ekran kartı',
+        'işlemci modeli',
+        'Ekran_Boyutu',
+        'Çözünürlük',
+        'Çözünürlük_Standartı',
+        'Panel_Tipi',
+        'Kullanım_Amacı'
+    ]
+    
+    # Create dictionary for dropdown values
+    dropdown_values = {}
+    
+    # Add label encoder values to dropdown_values
+    for col in categorical_columns:
+        if col in label_encoders:
+            dropdown_values[col] = sorted(label_encoders[col].classes_.tolist())
+    
+    # Create mappings for lowercase/uppercase & Turkish character variations
+    feature_mapping = {
+        'ekran kartı': 'Ekran_Kartı',
+        'işlemci modeli': 'İşlemci_Modeli',
+        'ekran kartı hafızası': 'Ekran_Kartı_Hafızası',
+        'temel işlemci hızı': 'Temel_İşlemci_Hızı',
+        'maksimum işlemci hızı': 'Maksimum_İşlemci_Hızı',
+        'İşletim_Sistemi': 'İşletim_Sistemi',
+        'brand': 'brand',
+        'Kullanım_Amacı': 'Kullanım_Amacı',
+        'Ekran_Boyutu': 'Ekran_Boyutu',
+        'Çözünürlük': 'Çözünürlük',
+        'Çözünürlük_Standartı': 'Çözünürlük_Standartı',
+        'Panel_Tipi': 'Panel_Tipi',
+        'Ekran_Kartı_Tipi': 'Ekran_Kartı_Tipi',
+        'Parmak_İzi_Okuyucu': 'Parmak_İzi_Okuyucu'
+    }
+    
+    # Populate dropdown values from label encoders
+    for display_feature, encoder_feature in feature_mapping.items():
+        if encoder_feature in label_encoders:
+            dropdown_values[display_feature] = sorted(label_encoders[encoder_feature].classes_.tolist())
+    
+    # Additional feature values could be added here from training data if needed
+    # For now we'll use the label encoders as our source for dropdown values
+    
     return render_template('index.html', 
                          feature_names=final_feature_names,
-                         categorical_columns=categorical_columns,
-                         label_encoders=label_encoders)
+                         categorical_columns=categorical_columns + additional_categorical_features,
+                         numeric_features=numeric_features,
+                         label_encoders=label_encoders,
+                         dropdown_values=dropdown_values)
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -128,4 +175,4 @@ def predict():
         })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001) 
+    app.run(debug=True, port=5003) 
