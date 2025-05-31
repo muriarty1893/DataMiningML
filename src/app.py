@@ -130,6 +130,16 @@ def predict():
         # Form verilerini al
         data = request.form.to_dict()
         
+        # Temel özelliklerin boş olup olmadığını kontrol et
+        required_fields = ['brand', 'ekran kartı', 'işlemci modeli', 'İşletim_Sistemi']
+        missing_fields = [field for field in required_fields if field not in data or not data[field]]
+        
+        if missing_fields:
+            return jsonify({
+                'success': False,
+                'error': f'Zorunlu alanlar boş bırakılamaz: {", ".join(missing_fields)}'
+            })
+        
         # Boş değerleri None olarak ayarla
         for key in data:
             if data[key] == '':

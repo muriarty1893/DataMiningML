@@ -39,18 +39,29 @@
         }
         
         .category-field {
-            background-color: #f8f9fa;
-            border-color: #d1d1d1;
+            background-color: #e9f7fb;
+            border-color: #0dcaf0;
+            border-left-width: 4px;
         }
         
         .numeric-field {
-            background-color: #e8f4ff;
-            border-color: #b8daff;
+            background-color: #e8f0ff;
+            border-color: #0d6efd;
+            border-left-width: 4px;
         }
         
         .form-label {
             font-weight: 500;
             color: #495057;
+        }
+        
+        .required-field.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+        }
+        
+        .text-danger {
+            color: #dc3545 !important;
         }
         
         .btn-primary {
@@ -79,10 +90,23 @@
         <h1 class="text-center mb-4">Fiyat Tahmin Sistemi</h1>
         
         <div class="form-container">
-            <form id="predictionForm">
+            <div class="alert alert-light mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><span class="text-danger">*</span> işaretli alanlar zorunludur.</p>
+                        <p class="mb-0 small text-muted">Diğer alanlar isteğe bağlıdır, ancak daha doğru sonuçlar için doldurulması önerilir.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <span class="badge bg-info me-2">Kategorik Alan</span>
+                        <span class="badge bg-primary">Sayısal Alan</span>
+                    </div>
+                </div>
+            </div>
+            <form id="predictionForm" class="needs-validation" novalidate>
                 <div class="row">
                     <div class="col-12 mb-3">
-                        <h4 class="text-primary">Temel Özellikler</h4>
+                        <h4 class="text-primary">Temel Özellikler <span class="text-danger">*</span></h4>
+                        <p class="text-muted small">Bu alanlar zorunludur.</p>
                         <hr>
                     </div>
                 </div>
@@ -91,8 +115,8 @@
                     {% for feature in feature_names %}
                         {% if feature in ['brand', 'ekran kartı', 'işlemci modeli', 'İşletim_Sistemi'] %}
                         <div class="col-md-6 col-lg-3 mb-3">
-                            <label for="{{ feature }}" class="form-label">{{ feature }}</label>
-                            <select class="form-select category-field" id="{{ feature }}" name="{{ feature }}">
+                            <label for="{{ feature }}" class="form-label">{{ feature }} <span class="text-danger">*</span></label>
+                            <select class="form-select category-field required-field" id="{{ feature }}" name="{{ feature }}" required>
                                 <option value="">Seçiniz</option>
                                 {% if feature in dropdown_values %}
                                     {% for value in dropdown_values[feature] %}
@@ -104,9 +128,16 @@
                                     {% endfor %}
                                 {% endif %}
                             </select>
+                            <div class="invalid-feedback">
+                                Bu alan zorunludur. Lütfen bir seçim yapınız.
+                            </div>
                         </div>
                         {% endif %}
                     {% endfor %}
+                </div>
+                
+                <div id="requiredFieldsError" class="alert alert-danger mt-3 mb-3" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i> Lütfen tüm zorunlu alanları (Temel Özellikler) doldurun.
                 </div>
                 
                 <div class="row">
@@ -196,9 +227,42 @@
                 }).format(amount);
             }
             
+            // Check required fields
+            function validateRequiredFields() {
+                let isValid = true;
+                $('#requiredFieldsError').hide();
+                
+                // Reset validation state
+                $('.required-field').removeClass('is-invalid');
+                
+                // Check each required field
+                $('.required-field').each(function() {
+                    if (!$(this).val()) {
+                        $(this).addClass('is-invalid');
+                        isValid = false;
+                    }
+                });
+                
+                // Show error message if validation fails
+                if (!isValid) {
+                    $('#requiredFieldsError').show();
+                    // Smooth scroll to error message
+                    $('html, body').animate({
+                        scrollTop: $('#requiredFieldsError').offset().top - 100
+                    }, 300);
+                }
+                
+                return isValid;
+            }
+            
             // Submit form handler
             $('#predictionForm').on('submit', function(e) {
                 e.preventDefault();
+                
+                // Validate required fields
+                if (!validateRequiredFields()) {
+                    return false;
+                }
                 
                 // Show loading state
                 $('#predictionResult').html('<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Yükleniyor...</span></div>');
@@ -234,8 +298,32 @@
             $('select, input').on('change', function() {
                 if ($(this).val()) {
                     $(this).addClass('is-valid').removeClass('is-invalid');
+                    
+                    // Hide error message if all required fields are valid
+                    if ($('.required-field.is-invalid').length === 0) {
+                        $('#requiredFieldsError').hide();
+                    }
                 } else {
-                    $(this).removeClass('is-valid').removeClass('is-invalid');
+                    $(this).removeClass('is-valid');
+                    
+                    // Only mark required fields as invalid on change
+                    if ($(this).hasClass('required-field')) {
+                        $(this).addClass('is-invalid');
+                    }
+                }
+            });
+            
+            // Add event handler for focus on required fields
+            $('.required-field').on('focus', function() {
+                // Add a subtle highlight effect
+                $(this).css('box-shadow', '0 0 0 0.2rem rgba(0, 123, 255, 0.25)');
+            }).on('blur', function() {
+                // Remove the highlight effect
+                $(this).css('box-shadow', '');
+                
+                // Show validation state on blur
+                if ($(this).val() === '') {
+                    $(this).addClass('is-invalid').removeClass('is-valid');
                 }
             });
         });
