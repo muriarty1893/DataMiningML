@@ -136,4 +136,75 @@ plt.title('Model R2 Score Comparison')
 plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
 plt.savefig('model_r2_comparison.png')
-plt.close() 
+plt.close()
+
+# --- Make a prediction based on user input ---
+logging.info("\n--- Kullanıcı Girişi ile Fiyat Tahmini ---")
+
+def get_user_input(feature_list):
+    user_data = {}
+    print("Lütfen aşağıdaki özellikler için değerleri girin:")
+    for feature in feature_list:
+        user_data[feature] = input(f"{feature}: ")
+    return user_data
+
+# Get input from user
+user_input_raw = get_user_input(features)
+
+# Create a DataFrame from user input
+# Convert single row dict to DataFrame
+user_df = pd.DataFrame([user_input_raw])
+
+# Apply the same preprocessing as used for training data
+# Identify categorical and numerical features again based on the original list and le usage
+categorical_features = ['İşlemci_Modeli', 'brand', 'Kullanım_Amacı', 'Panel_Tipi']
+numerical_features = [f for f in features if f not in categorical_features]
+
+# Convert numerical inputs to appropriate types (float/int)
+for col in numerical_features:
+    try:
+        # Attempt to convert to integer first if no decimal is expected
+        user_df[col] = pd.to_numeric(user_df[col], errors='coerce')
+    except ValueError:
+        user_df[col] = np.nan # Handle cases where conversion fails
+
+# Apply Label Encoding to categorical features using the *fitted* le object
+for feature in categorical_features:
+    # Handle potential new categories not seen during training if necessary
+    # For simplicity here, we assume user input categories exist in training data labels
+    # A more robust approach might handle unknown labels (e.g., assign a default or use handle_unknown='ignore' if supported)
+    try:
+        user_df[feature] = le.transform(user_df[feature].astype(str))
+    except ValueError as e:
+        logging.error(f"Label Encoding error for feature {feature}: {e}. Ensure input category exists in training data.")
+        # Decide how to handle this - for now, let's stop or assign a default/NaN
+        sys.exit(f"Hata: '{user_input_raw[feature]}' değeri '{feature}' özelliği için geçerli değil.")
+
+# Apply Scaling to numerical features using the *fitted* scaler object
+# Ensure numerical columns are indeed numeric before scaling
+user_df_numerical = user_df[numerical_features]
+
+# Check for any non-numeric values that failed conversion
+if user_df_numerical.isnull().values.any():
+     sys.exit("Hata: Sayısal değer girilmesi gereken bir özellik için geçersiz giriş yaptınız.")
+
+user_data_scaled = scaler.transform(user_df_numerical)
+
+# Combine scaled numerical and encoded categorical data
+# Ensure the order of columns matches the training data
+user_data_processed = pd.DataFrame(user_data_scaled, columns=numerical_features)
+
+# Add back categorical columns (already encoded)
+for feature in categorical_features:
+     user_data_processed[feature] = user_df[feature]
+
+# Reorder columns to match the training features list
+user_data_processed = user_data_processed[features]
+
+# Make prediction using the best model
+# Ensure the best_model_object is accessible here. It was defined earlier.
+if 'best_model_object' in locals():
+    predicted_price = best_model_object.predict(user_data_processed)
+    logging.info(f"Tahmin Edilen Fiyat: {predicted_price[0]:.2f}")
+else:
+    logging.error("Best model object not found. Cannot make prediction.") 
